@@ -9,8 +9,8 @@ jobs:
       - uses: actions/checkout@v2
       - name: Build Image
       # ${{ secrets.DOCKER_REPOSITORY }}是读取之前在Secret创建的名为DOCKER_REPOSITORY的值
-        run: docker build -t registry.cn-shanghai.aliyuncs.com/qbot/cbot:latest ./ # 打包并docker镜像，版本为latest
+        run: docker build -t registry.cn-shanghai.aliyuncs.com/qbot/kxbot:latest ./ # 打包并docker镜像，版本为latest
       - name: Login to Registry # 登录阿里云镜像服务器
         run: docker login --username=${{ secrets.USERNAME }} --password ${{ secrets.PASSWORD }} registry.cn-shanghai.aliyuncs.com
       - name: Push Image # 推送镜像，设置版本为latest
-        run: docker push registry.cn-shanghai.aliyuncs.com/qbot/cbot:latest
+        run: docker push registry.cn-shanghai.aliyuncs.com/qbot/kxbot:latest
