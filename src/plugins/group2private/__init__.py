@@ -15,7 +15,7 @@ reply_session=on_message()
 async def g2p(bot:Bot,event=GroupMessageEvent):
     raw=event.raw_message
     if 'CQ:reply' in raw:
-        msgid=json.dumps(event.json())["reply"]["message_id"]
+        msgid=json.loads(event.json())["reply"]["message_id"]
         originnal_content=await bot.get_msg(message_id=msgid)
         txt=originnal_content['message'][0]['data']['text']
         sender_id_pattern = re.compile(r'(?<=\$).+(?=\n)')
