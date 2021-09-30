@@ -21,6 +21,8 @@ async def p2g(bot:Bot,event:PrivateMessageEvent):
 @message_sent.handle()
 async def message_sent_fwd(bot:Bot,event:Event):
     this_event=json.loads(event.json())
+    print(this_event)
+    if this_event['sub_type']!="friend": return
     msgcontent=this_event['message']
     tosend=Message(msgcontent)
     fwd_str=f'我发送了:\n{tosend}'
