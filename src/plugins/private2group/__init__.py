@@ -24,6 +24,11 @@ async def message_sent_fwd(bot:Bot,event:Event):
     print(this_event)
     if this_event['sub_type']!="friend": return
     msgcontent=this_event['message']
+    msgid=this_event['message_id']
+    target_id=this_event['target_id']
+    target_nick=(await bot.get_stranger_info(user_id=target_id))['nickname']
+    print(target_nick,target_id)
     tosend=Message(msgcontent)
-    fwd_str=f'我发送了:\n{tosend}'
+    fwd_str=f'Sent_to:{target_nick}\ntarget_id:{target_id}\nmsgid:{msgid}\n{tosend}'
+    print(fwd_str)
     await bot.send_group_msg(group_id=status_config.group_id,message=fwd_str)
