@@ -1,31 +1,45 @@
-from nonebot.adapters.cqhttp import Bot,GroupMessageEvent
-from nonebot.plugin import on_message
-from nonebot import get_driver
-from .config import Config
-import json
+from nonebot import get_driver,on_message
+from nonebot.adapters.cqhttp import Bot,GroupMessageEvent,Message
+from nonebot.typing import T_State
+from nonebot.rule import to_me
+from nonebot.exception import ActionFailed
 import re
-
+from .config import Config
 
 global_config = get_driver().config
-status_config = Config(**global_config.dict())
+config = Config(**global_config.dict())
 
-reply_session=on_message()
+callin_session =on_message(rule=to_me())
 
-@reply_session.handle()
-async def g2p(bot:Bot,event=GroupMessageEvent):
-    raw=event.raw_message
-    if 'CQ:reply' in raw:
-        if str(event.message).startswith('#'): return 
-        msgid=json.loads(event.json())["reply"]["message_id"]
-        originnal_content=await bot.get_msg(message_id=msgid)
-        txt=originnal_content['message'][0]['data']['text']
-        sender_id_pattern = re.compile(r'(?<=\$).+(?=\n)')
-        id_send=txt[sender_id_pattern.search(txt).start():sender_id_pattern.search(txt).end()]
-        tosend=str(event.message).replace('[CQ:at,qq=2285047281] ', '')
-        await bot.send_private_msg(user_id=id_send,message=tosend)
+@callin_session.handle()
+async def handle_first_message(bot:Bot,event:GroupMessageEvent,state:T_State):
+    if str(event.message).startswith('#'):await callin_session.finish()
+    # if reply is a comment, do nothing
 
+    origin=str(event.reply.message)
+    sender_id_pattern = re.compile(r'(?<=\$).+(?=\n)')
+    state["target_id"]=origin[sender_id_pattern.search(origin).start():sender_id_pattern.search(origin).end()]
+    # get reply target_id, stored in state
 
+    if not str(event.message)=="pic":
+        state["message"] =event.message
+        state["is_pic"]=False
+    else:
+        state["is_pic"]=True
+    # handle pictures
 
-def get_sender(inp:str)->int:
-    pass
-
+@callin_session.got("message",prompt="Send a picture")
+async def send_picture(bot:Bot,event:GroupMessageEvent,state:T_State):
+    if state["is_pic"] \
+    and not "[CQ:image" in str(state["message"] \
+    and not "cancel" in str(state["message"])):
+        callin_session.reject("Please send a picture")
+        # if message is not a picture, reject it
+    
+    try:
+        await bot.send_private_msg(user_id=state["target_id"],message=state["message"])
+        await callin_session.finish()
+        # final send
+    except ActionFailed as err:
+        await bot.finish(f"Error encountered, {err}")
+        # if Error is encountered, log the error
