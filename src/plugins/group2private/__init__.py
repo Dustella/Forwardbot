@@ -17,7 +17,7 @@ async def handle_first_message(bot:Bot,event:GroupMessageEvent,state:T_State):
     # if reply is a comment, do nothing
 
     origin=str(event.reply.message)
-    sender_id_pattern = re.compile(r'(?<=\$).+(?=\n)')
+    sender_id_pattern = re.compile(r'(?<=@).+(?=\n)')
     state["target_id"]=origin[sender_id_pattern.search(origin).start():sender_id_pattern.search(origin).end()]
     # get reply target_id, stored in state
 
