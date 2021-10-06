@@ -15,25 +15,28 @@ callin_session =on_message(rule=to_me(),priority=1)
 async def handle_first_message(bot:Bot,event:GroupMessageEvent,state:T_State):
     if str(event.message).startswith('#'):await callin_session.finish()
     # if reply is a comment, do nothing
+
     origin=str(event.reply.message)
-    sender_id_pattern = re.compile(r'(?<=\@).+(?=\n)')
-    message_id_pattern = re.compile(r'(?<=#).+(?=\n)')
-    state["target_id"]=origin[sender_id_pattern.search(origin).start():sender_id_pattern.search(origin).end()]
-    state["message_id"]=origin[message_id_pattern.search(origin).start():message_id_pattern.search(origin).end()]
-    # get reply target_id, stored in state
-    print(state)
+    state["target_id"]=get_between(origin,"@","#")
+    state["message_id"]=get_between(origin,"#","\n")
+    # get reply target_id, message_id, stored in state
+
     if str(event.message)=="pic":
         state["is_pic"]=True
+        # handle picture 
     elif str(event.message)=="del" or str(event.message)=="recall":
         try:
             await bot.delete_msg(message_id=state["message_id"])
-            await callin_session.finish()
+            await callin_session.finish(f"recall successful")
         except ActionFailed as err:
             await callin_session.finish(f"Error encountered, {err}")
+            # handle recall 
     else:
         state["message"] =event.message
         state["is_pic"]=False
-        # handle pictures
+        # common messages
+    
+
 
 
 @callin_session.got("message",prompt="Send a picture")
@@ -50,3 +53,9 @@ async def send_picture(bot:Bot,event:GroupMessageEvent,state:T_State):
         # final send
     except ActionFailed as err:
         await bot.finish(f"Error encountered, {err}")
+
+def get_between(source:str,index_a:str,index_b:str)->str:
+    restr=f"(?<={index_a}).+(?={index_b})"
+    pattern = re.compile(restr)
+    result=source[pattern.search(source).start():pattern.search(source).end()]
+    return result
