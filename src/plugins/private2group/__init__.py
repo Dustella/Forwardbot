@@ -15,7 +15,8 @@ async def p2g(bot:Bot,event:PrivateMessageEvent):
     sender_id=event.get_user_id()
     sender_nick=event.sender.nickname
     message_content=event.get_message()
-    fwd_str=f'{sender_nick}: \n${sender_id}\n{message_content}'
+    message_id=event.message_id
+    fwd_str=f'    From: {sender_nick}: \n    @{sender_id}\n    #{message_id}\n\n{message_content}'
     await bot.send_group_msg(group_id=status_config.group_id,message=fwd_str)
 
 @message_sent.handle()
@@ -29,6 +30,6 @@ async def message_sent_fwd(bot:Bot,event:Event):
     target_nick=(await bot.get_stranger_info(user_id=target_id))['nickname']
     print(target_nick,target_id)
     tosend=Message(msgcontent)
-    fwd_str=f'Sent_to:{target_nick}\ntarget_id:{target_id}\nmsgid:{msgid}\n{tosend}'
+    fwd_str=f'    Sent_to: {target_nick}\n    @{target_id}\n    #{msgid}\n\n{tosend}'
     print(fwd_str)
     await bot.send_group_msg(group_id=status_config.group_id,message=fwd_str)
