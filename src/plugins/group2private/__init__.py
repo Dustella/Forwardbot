@@ -36,9 +36,6 @@ async def handle_first_message(bot:Bot,event:GroupMessageEvent,state:T_State):
         state["is_pic"]=False
         # common messages
     
-
-
-
 @callin_session.got("message",prompt="Send a picture")
 async def send_picture(bot:Bot,event:GroupMessageEvent,state:T_State):
     if state["is_pic"] \
@@ -49,6 +46,7 @@ async def send_picture(bot:Bot,event:GroupMessageEvent,state:T_State):
 
     try:
         await bot.send_private_msg(user_id=state["target_id"],message=state["message"])
+        await bot.delete_msg(message_id=event.message_id)
         await callin_session.finish()
         # final send
     except ActionFailed as err:
