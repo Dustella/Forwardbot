@@ -17,10 +17,7 @@ async def p2g(bot:Bot,event:PrivateMessageEvent):
     sender_id=event.get_user_id()
     sender_nick=event.sender.nickname
     message_content=event.get_message()
-    if int(event.get_user_id())==last_callin_session:
-        fwd_str=f"{message_content}"
-    else:
-        fwd_str=f'From: {sender_nick}\n@{sender_id}\n\n{message_content}'
+    fwd_str=f'From: {sender_nick}\n@{sender_id}\n\n{message_content}'
     last_callin_session=event.sender.user_id
     await bot.send_group_msg(group_id=status_config.group_id,message=fwd_str)
 
