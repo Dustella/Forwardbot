@@ -14,12 +14,23 @@ status_config = Config(**global_config.dict())
 @callin_session.handle()
 async def p2g(bot:Bot,event:PrivateMessageEvent):
     global last_callin_session
-    sender_id=event.get_user_id()
-    sender_nick=event.sender.nickname
-    message_content=event.get_message()
-    msgid=event.message_id
-    fwd_str=f'From: {sender_nick}\n@{sender_id}#{msgid}\n\n{message_content}'
+    last_message_user=(await bot.get_group_msg_history(group_id=status_config.group_id))["messages"][19]["user_id"]
+    last_message=(await bot.get_group_msg_history(group_id=status_config.group_id))["messages"][19]["raw_message"]
+    lite_flag=(str(last_message_user)==str(bot.self_id)) and (str(last_message).find("Sent_to")==-1) and (last_callin_session==event.get_user_id())
+
+    user_info=f"From: {event.sender.nickname}\n@{event.get_user_id()}#{event.message_id}\n"
+    message_type=json.loads(event.json())["message"][0]["type"]
+    if message_type=="video":
+        await bot.send_group_msg(group_id=status_config.group_id,message=f"{user_info}\n[视频消息]")
+    elif message_type=="forward":
+        await bot.send_group_msg(group_id=status_config.group_id,message=f"{user_info}\n[转发消息]")
+    elif message_type=="xml":
+        await bot.send_group_msg(group_id=status_config.group_id,message=f"{user_info}\n[xml消息]")
+    fwd_str=(f'{user_info}\n{event.get_message()}',f"{event.get_message()}")[lite_flag]
+
+    last_callin_session=event.get_user_id()
     await bot.send_group_msg(group_id=status_config.group_id,message=fwd_str)
+    await callin_session.finish()
 
 @message_sent.handle()
 async def message_sent_fwd(bot:Bot,event:Event):
