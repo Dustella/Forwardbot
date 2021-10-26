@@ -46,7 +46,6 @@ async def send_picture(bot:Bot,event:GroupMessageEvent,state:T_State):
 
     try:
         await bot.send_private_msg(user_id=state["target_id"],message=state["message"])
-        await bot.delete_msg(message_id=event.message_id)
         await callin_session.finish()
         # final send
     except ActionFailed as err:
